@@ -1,19 +1,37 @@
+import 'dart:math';
 import 'dart:ui';
 import 'dart:ui' as prefix0;
 
 import 'package:flutter/material.dart';
+import 'package:indoor_navigation/model/map.dart' as prefix1;
+import 'package:indoor_navigation/model/object.dart';
 import 'package:indoor_navigation/model/pair.dart';
 
 class MyPainter extends CustomPainter{
+  var names = ['Склад 1','Склад 2','Сборочный цех','Конвейер 1'];
   Size screenSize;
   Dot currentLocation;
-  MyPainter(this.screenSize, this.currentLocation);
+  prefix1.Map map;
+  MyPainter(this.screenSize, this.currentLocation,this.map);
 
   get cWidth => screenSize.width/2;
   get cHeight => screenSize.height/2;
 
-
   drawMap(Canvas canvas){
+    var colors = [Colors.red, Colors.green, Colors.indigo, Colors.orange, Colors.yellow];
+    for (var road in map.listRoads) {
+      drawRoad(canvas, Offset(road.start.dx, road.start.dy), Offset(road.end.dx, road.end.dy));
+    }
+    for (int i =0;i<map.listObjects.length;i++) {
+      var obj = map.listObjects[i];
+      drawRectLTRB(canvas, obj, colors[i]);
+      drawName(canvas, 'ABCDEFG'[i], obj.cx, obj.cy);
+    }
+
+
+    drawUserLocation(canvas);
+  }
+  drawMapManual(Canvas canvas){
     var paint = Paint()
       ..style = PaintingStyle.stroke
       ..color = Colors.black12
@@ -33,7 +51,7 @@ class MyPainter extends CustomPainter{
   drawName(Canvas canvas, String text, double x, double y){
     Offset offset = Offset(x, y);
     ParagraphBuilder pgBuilder = ParagraphBuilder(ParagraphStyle());
-    pgBuilder.pushStyle(prefix0.TextStyle(color: Colors.white, fontSize: 16,));
+    pgBuilder.pushStyle(prefix0.TextStyle(color: Colors.white, fontSize: 20,));
     pgBuilder.addText(text);
     pgBuilder.pop();
 
@@ -91,7 +109,7 @@ class MyPainter extends CustomPainter{
       ..isAntiAlias = true
       ..strokeWidth = 3;
     if(currentLocation != null){
-      canvas.drawCircle(Offset(cWidth-175+(350*currentLocation.dy), cHeight-175+(350*currentLocation.dx)), 10, paint);
+      canvas.drawCircle(Offset((700*currentLocation.dy), (700*currentLocation.dx)), 10, paint);
     }
   }
 
@@ -106,12 +124,25 @@ class MyPainter extends CustomPainter{
     canvas.drawRect(Rect.fromCenter(center: offset, width: 50, height: 50), paint );
   }
 
+  drawRectLTRB(Canvas canvas, Obj obj, Color color){
+    var paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = color
+      ..isAntiAlias = true;
+
+    canvas.drawRect(Rect.fromLTWH(obj.cx, obj.cy, 50, 50), paint);
+
+
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     //canvas.translate(55.613472, 49.297441);
     canvas.scale(1,1);
 
+
     drawMap(canvas);
+    //drawMapManual(canvas);
   }
 
   @override

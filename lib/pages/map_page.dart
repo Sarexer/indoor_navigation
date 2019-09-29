@@ -1,14 +1,19 @@
 import 'dart:convert';
+import 'dart:core' as prefix0;
+import 'dart:core';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:indoor_navigation/model/custom_painter.dart';
+import 'package:indoor_navigation/model/map.dart';
+import 'package:indoor_navigation/model/map.dart' as prefix1;
 import 'package:indoor_navigation/model/pair.dart';
 import 'package:location/location.dart';
 import 'package:rubber/rubber.dart';
 import 'package:http/http.dart';
+import 'package:zoom_widget/zoom_widget.dart';
 
 class MapPage extends StatefulWidget {
   @override
@@ -24,9 +29,11 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
     Dot(55.612486, 49.298052)
   ];
 
+  prefix1.Map map;
+
   var location = new Location();
 
-  Map<String, double> userLocation;
+  prefix0.Map<String, double> userLocation;
 
   Dot translatedLocation;
 
@@ -58,10 +65,12 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
   }
 
   loadMap() async{
-    String url = "sdfsdfdf";
+    String url = "http://192.168.43.205:3000/show";
     Response response = await get(url);
     setState(() {
-      var map = json.decode(response.body);
+      map = Map(response.body);
+      map.createMapFromJson();
+
     });
   }
 
@@ -92,15 +101,19 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Map Name'),
+        title: Text('Example Name'),
       ),
       body: Stack(
         children: <Widget>[
           Align(
             alignment: Alignment.topCenter,
-            child: CustomPaint(
-              size: Size(screenSize.width, screenSize.height),
-              painter: MyPainter(screenSize, translatedLocation),
+            child: Zoom(
+              width: 1000,
+              height: 1000,
+              child: CustomPaint(
+                size: Size(screenSize.width, screenSize.height),
+                painter: MyPainter(screenSize, translatedLocation,map),
+              ),
             ),
           ),
           Align(
